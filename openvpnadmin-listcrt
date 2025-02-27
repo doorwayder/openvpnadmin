@@ -1,0 +1,13 @@
+#!/bin/bash
+
+clear
+
+CRTLIST=""
+CRT_PATH=/etc/openvpn/keys/pki/issued
+MESSAGE=$(ls /etc/openvpn/keys/pki/issued -c)
+NUM=$(ls /etc/openvpn/keys/pki/issued | wc -l)
+echo $NUM
+let LEN=2*$NUM-5
+whiptail --msgbox "${MESSAGE}" $LEN 50
+cd /etc/openvpn/tools
+./openvpnadmin-status

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+clear
+cd /etc/openvpn/keys
+
+USERNAME=$(whiptail --inputbox "Revoke Certificate" 8 40 --title "Openvpn Revoking" 3>&1 1>&2 2>&3)
+
+client=$USERNAME
+if [ "$client" = "" ]; then
+  exit
+fi
+
+./easyrsa revoke ${client}
+rm /var/www/html/${client}.ovpn
+rm /etc/openvpn/keys/${client}.ovpn
+
+cd /etc/openvpn/tools
+./openvpnadmin-status

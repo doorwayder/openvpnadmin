@@ -1,0 +1,7 @@
+#!/bin/bash
+
+clear
+systemctl restart openvpn@server
+
+cd /etc/openvpn/tools
+./openvpnadmin-status

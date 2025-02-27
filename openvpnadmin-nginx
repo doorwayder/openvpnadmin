@@ -1,0 +1,13 @@
+#!/bin/bash
+
+clear
+
+if (systemctl -q is-active nginx)
+    then
+    systemctl stop nginx
+    else
+    systemctl start nginx
+fi
+
+cd /etc/openvpn/tools
+./openvpnadmin-status

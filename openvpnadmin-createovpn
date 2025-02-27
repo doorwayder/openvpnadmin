@@ -1,0 +1,61 @@
+#!/bin/bash
+
+clear
+echo "OpenVPN Admin Console - Creating Configuration file"
+
+client_base_conf="client_template.ovpn"
+client_crt_ext=".crt"
+client_key_ext=".key"
+client_conf_ext=".ovpn"
+
+USERNAME=$(whiptail --inputbox "Enter OpenVPN Username" 8 40 --title "Create new Configuration file" 3>&1 1>&2 2>&3)
+
+cd /etc/openvpn/keys
+
+client=$USERNAME
+if [ "$client" = "" ]; then
+  echo "missing client name" 1>&2
+  exit
+fi
+
+client_crt=/etc/openvpn/keys/pki/issued/${client}${client_crt_ext}
+client_key=/etc/openvpn/keys/pki/private/${client}${client_key_ext}
+
+./easyrsa gen-req ${client} nopass
+./easyrsa sign-req client ${client}
+
+if [ ! -f $client_crt ]; then
+  echo "no such file: $client_crt" 1>&2
+  exit
+fi
+
+if [ ! -f $client_key ]; then
+  echo "no such file: $client_key" 1>&2
+  exit
+fi
+
+congif=${client}${client_conf_ext}.tmp
+congif_file=${client}${client_conf_ext}
+
+cat $client_base_conf > $congif
+echo "" >> $congif
+
+echo "<cert>" >> $congif
+cat $client_crt | \
+  grep -A 100 "BEGIN CERTIFICATE" | \
+  grep -B 100 "END CERTIFICATE" >> $congif
+echo "</cert>" >> $congif
+
+echo "<key>" >> $congif
+cat $client_key | \
+  grep -A 100 "BEGIN PRIVATE KEY" | \
+  grep -B 100 "END PRIVATE KEY" >> $congif
+echo "</key>" >> $congif
+
+tr -d '\r' < $congif > $congif_file
+rm $congif
+cp $congif_file /var/www/html/${congif_file}
+
+echo "Configuration File created at $(pwd)/${congif_file}"
+cd /etc/openvpn/tools
+./openvpnadmin-status
