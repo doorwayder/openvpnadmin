@@ -45,10 +45,6 @@ while read line; do                                             # loop through a
     fi
 done < $input_file
 
-# output header columns -- feel free to customize ordering (must change in loop below as well)
-#printf '%-20s\t%-20s\t%8s\t%8s\t%-26s\t%-15s\n' "Client" "From (IP:port)" "MB Sent" "MB Recvd" "Connected Since" "Private IP"
-#printf '%-20s\t%-20s\t%8s\t%8s\t%-26s\t%-15s\n' "------" "--------------" "-------" "--------" "---------------" "----------"
-
 MESSAGE=""
 
 if (systemctl -q is-active openvpn@server)
@@ -72,37 +68,35 @@ do
     MESSAGE+="${client[$j]} (${ippriv[$j]})-> ${ippub[$j]} (${since[$j]})\n"
 done
 
-let i=$i+6
+let i=$i+7
 let WIDTH=2*$i
-#whiptail --msgbox "${MESSAGE}" $WIDTH 100
 
-OPTION=$(whiptail --title  "OpenVPN Admin Console" --menu  "${MESSAGE}" $WIDTH 100 5 \
+OPTION=$(whiptail --title  "OpenVPN Admin Console" --menu  "${MESSAGE}" $WIDTH 85 6 \
 "1" "Create New Configuration File (.ovpn)" \
 "2" "List of Certificates" \
 "3" "Revoke Certificate and Delete .OVPN-file" \
 "4" "Start/Stop Nginx Server" \
-"5" "Restart OpenVPN Server"  3>&1 1>&2 2>&3)
-
-#if (OPTION==4)
-#    then
-#    ./openvpnadmin-nginx
-#fi
+"5" "Restart OpenVPN Server" \
+"6" "Statistics"  3>&1 1>&2 2>&3)
 
 exitstatus=$?
 if [ $exitstatus = 0 ]; then
     if [[ $OPTION -eq 1 ]]; then
-	./openvpnadmin-createovpn
+        ./openvpnadmin-createovpn
     elif [[ $OPTION -eq 2 ]]; then
-	./openvpnadmin-listcrt
+        ./openvpnadmin-listcrt
     elif [[ $OPTION -eq 3 ]]; then
-	./openvpnadmin-revoke
+        ./openvpnadmin-revoke
     elif [[ $OPTION -eq 4 ]]; then
-	./openvpnadmin-nginx
+        ./openvpnadmin-nginx
     elif [[ $OPTION -eq 5 ]]; then
-	./openvpnadmin-restart
-	else
-	echo "other"
+        ./openvpnadmin-restart
+    elif [[ $OPTION -eq 6 ]]; then
+        ./openvpnadmin-stats
+        else
+        echo "other"
     fi
 else
     echo "Interrupted..."
 fi
+
